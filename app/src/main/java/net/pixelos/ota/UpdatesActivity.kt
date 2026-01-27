@@ -841,7 +841,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
     private fun removeUpdate(downloadId: String) {
         if (mLatestDownloadId == downloadId) {
             mLatestDownloadId = ""
-            mCachedMirrors = null
             updateUI(mLatestDownloadId)
         }
     }
