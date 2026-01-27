@@ -27,6 +27,13 @@ object Constants {
     const val PREF_NEEDS_REBOOT_ID: String = "needs_reboot_id"
     const val PREF_AUTO_DELETE_UPDATES: String = "auto_delete_updates"
     const val PREF_DOWNLOAD_MIRROR: String = "download_mirror"
+
+    // Developer options
+    const val PREF_DEV_OPTIONS_ENABLED: String = "dev_options_enabled"
+    const val PREF_DEV_SERVER_URL: String = "dev_server_url"
+    const val PREF_DEV_DEVICE_NAME: String = "dev_device_name"
+    const val PREF_DEV_VERSION: String = "dev_version"
+
     const val UNCRYPT_FILE_EXT: String = ".uncrypt"
     const val PROP_AB_DEVICE: String = "ro.build.ab_update"
     const val PROP_BUILD_DATE: String = "ro.build.date.utc"
