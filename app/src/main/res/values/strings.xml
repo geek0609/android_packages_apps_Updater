@@ -78,7 +78,14 @@
     <string name="update_recovery_summary">Enable to update recovery from the build automatically.</string>
 
     <string name="snack_updates_check_failed">The update check failed. Please check your internet connection and try again later.</string>
+
+    <!-- Downloads -->
+    <string name="downloads_header">Downloads</string>
+    <string name="menu_stream_ota">Stream updates</string>
+    <string name="menu_stream_ota_summary">Whenever possible, save time by installing updates as they download.\nDisable on unreliable network.</string>
+
     <string name="snack_download_failed">The download failed. Please check your internet connection and try again later.</string>
+    <string name="stream_download_failed_toast">Stream download failed, switching to regular download.</string>
     <string name="snack_download_verification_failed">The update verification failed.</string>
     <string name="snack_download_verified">Download completed.</string>
     <string name="snack_update_not_installable">This update can\'t be installed on top of the current build.</string>

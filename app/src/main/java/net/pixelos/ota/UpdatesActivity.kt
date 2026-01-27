@@ -421,7 +421,7 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
                             mUpdateInfoWarning.isVisible = false
                             val update: UpdateInfo =
                                 mUpdaterController!!.getUpdate(mLatestDownloadId)
-                            if (canInstall(update) || update.file.length() == update.fileSize) {
+                            if (canInstall(update) || (update.file != null && update.file.exists() && update.file.length() == update.fileSize)) {
                                 mUpdaterController!!.resumeDownload(mLatestDownloadId)
                             } else {
                                 showUpdateInfo(R.string.snack_update_not_installable)
@@ -737,7 +737,7 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
         if (mUpdaterController!!.isDownloading(downloadId)) {
             showCancelButton = true
             canDelete = true
-            val downloaded: String = Formatter.formatShortFileSize(this, update.file.length())
+            val downloaded = Formatter.formatShortFileSize(this, update.file?.length() ?: 0L)
             val total: String = Formatter.formatShortFileSize(this, update.fileSize)
             val percentage: String =
                 NumberFormat.getPercentInstance().format((update.progress / 100f).toDouble())
@@ -780,7 +780,7 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
             showCancelButton = true
             canDelete = true
             setupButtonAction(Action.RESUME, mPrimaryActionButton, !isBusy)
-            val downloaded: String = Formatter.formatShortFileSize(this, update.file.length())
+            val downloaded = Formatter.formatShortFileSize(this, update.file?.length() ?: 0L)
             val total: String = Formatter.formatShortFileSize(this, update.fileSize)
             val percentage: String =
                 NumberFormat.getPercentInstance().format((update.progress / 100f).toDouble())
@@ -886,13 +886,16 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
         val update: UpdateInfo = mUpdaterController!!.getUpdate(downloadId)
         val resId: Int =
             try {
-                if (isABUpdate(update.file)) {
+                if (update.stream) {
+                    R.string.apply_update_dialog_message_ab
+                } else if (isABUpdate(update.file)) {
                     R.string.apply_update_dialog_message_ab
                 } else {
                     R.string.apply_update_dialog_message
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Could not determine the type of the update")
+                R.string.apply_update_dialog_message
             }
 
         val buildDate: String = getDateLocalizedUTC(this, DateFormat.MEDIUM, update.timestamp)

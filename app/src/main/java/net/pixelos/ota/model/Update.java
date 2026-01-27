@@ -44,6 +44,10 @@ public class Update extends UpdateBase implements UpdateInfo {
         mInstallProgress = update.getInstallProgress();
         mAvailableOnline = update.getAvailableOnline();
         mIsFinalizing = update.getFinalizing();
+        setStream(update.getStream());
+        setStreamUrl(update.getStreamUrl());
+        setPayloadOffset(update.getPayloadOffset());
+        setPayloadProperties(update.getPayloadProperties());
     }
 
     @Override

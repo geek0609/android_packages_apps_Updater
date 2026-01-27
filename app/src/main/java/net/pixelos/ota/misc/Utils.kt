@@ -75,6 +75,26 @@ object Utils {
         update.fileSize = obj.getLong("size")
         update.downloadUrl = obj.getString("url")
         update.version = obj.getString("version")
+        update.stream = obj.optBoolean("stream", false)
+        update.streamUrl = obj.optString("stream_url", "")
+
+        if (obj.has("payload")) {
+            val payloadList = obj.getJSONArray("payload")
+            if (payloadList.length() > 0) {
+                val payloadObj = payloadList.getJSONObject(0)
+                update.payloadOffset = payloadObj.optLong("offset", 0)
+                val properties = ArrayList<String>()
+                val keys = payloadObj.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    if (key != "offset") {
+                        properties.add(key + "=" + payloadObj.getString(key))
+                    }
+                }
+                update.payloadProperties = properties
+            }
+        }
+
         return update
     }
 
@@ -299,7 +319,9 @@ object Utils {
         val dbHelper = UpdatesDbHelper(context)
         val knownPaths: MutableList<String> = ArrayList()
         for (update in dbHelper.updates) {
-            knownPaths.add(update.file.absolutePath)
+            if (update.file != null) {
+                knownPaths.add(update.file.absolutePath)
+            }
         }
         for (file: File in files) {
             if (!knownPaths.contains(file.absolutePath)) {
@@ -346,6 +368,9 @@ object Utils {
     @JvmStatic
     @Throws(IOException::class)
     fun isABUpdate(file: File?): Boolean {
+        if (file == null || !file.exists()) {
+            return false
+        }
         val zipFile = ZipFile(file)
         val isAB: Boolean = isABUpdate(zipFile)
         zipFile.close()

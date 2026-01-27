@@ -26,6 +26,7 @@ object Constants {
     const val PREF_CHECK_FOR_CERTIFIED_PROPS: String = "check_certified_prop"
     const val PREF_NEEDS_REBOOT_ID: String = "needs_reboot_id"
     const val PREF_AUTO_DELETE_UPDATES: String = "auto_delete_updates"
+    const val PREF_STREAM_OTA: String = "stream_ota"
     const val UNCRYPT_FILE_EXT: String = ".uncrypt"
     const val PROP_AB_DEVICE: String = "ro.build.ab_update"
     const val PROP_BUILD_DATE: String = "ro.build.date.utc"

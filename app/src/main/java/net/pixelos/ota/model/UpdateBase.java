@@ -23,6 +23,10 @@ public class UpdateBase implements UpdateBaseInfo {
     private long mTimestamp;
     private String mVersion;
     private long mFileSize;
+    private boolean mStream;
+    private String mStreamUrl;
+    private long mPayloadOffset;
+    private java.util.List<String> mPayloadProperties;
 
     public UpdateBase() {
     }
@@ -34,6 +38,10 @@ public class UpdateBase implements UpdateBaseInfo {
         mTimestamp = update.getTimestamp();
         mVersion = update.getVersion();
         mFileSize = update.getFileSize();
+        mStream = update.getStream();
+        mStreamUrl = update.getStreamUrl();
+        mPayloadOffset = update.getPayloadOffset();
+        mPayloadProperties = update.getPayloadProperties();
     }
 
     @Override
@@ -88,5 +96,41 @@ public class UpdateBase implements UpdateBaseInfo {
 
     public void setFileSize(long fileSize) {
         mFileSize = fileSize;
+    }
+
+    @Override
+    public boolean getStream() {
+        return mStream;
+    }
+
+    public void setStream(boolean stream) {
+        mStream = stream;
+    }
+
+    @Override
+    public String getStreamUrl() {
+        return mStreamUrl;
+    }
+
+    public void setStreamUrl(String streamUrl) {
+        mStreamUrl = streamUrl;
+    }
+
+    @Override
+    public long getPayloadOffset() {
+        return mPayloadOffset;
+    }
+
+    public void setPayloadOffset(long payloadOffset) {
+        mPayloadOffset = payloadOffset;
+    }
+
+    @Override
+    public java.util.List<String> getPayloadProperties() {
+        return mPayloadProperties;
+    }
+
+    public void setPayloadProperties(java.util.List<String> payloadProperties) {
+        mPayloadProperties = payloadProperties;
     }
 }

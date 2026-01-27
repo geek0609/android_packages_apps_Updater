@@ -86,8 +86,11 @@ class UpdatesDbHelper(context: Context?) :
         while (cursor.moveToNext()) {
             val update = Update()
             var index = cursor.getColumnIndex(UpdateEntry.COLUMN_NAME_PATH)
-            update.file = File(cursor.getString(index))
-            update.name = update.file.name
+            val path = cursor.getString(index)
+            if (path != null) {
+                update.file = File(path)
+                update.name = update.file.name
+            }
             index = cursor.getColumnIndex(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID)
             update.downloadId = cursor.getString(index)
             index = cursor.getColumnIndex(UpdateEntry.COLUMN_NAME_TIMESTAMP)
@@ -139,7 +142,7 @@ class UpdatesDbHelper(context: Context?) :
 
         private fun fillContentValues(update: Update, values: ContentValues) {
             values.put(UpdateEntry.COLUMN_NAME_STATUS, update.persistentStatus)
-            values.put(UpdateEntry.COLUMN_NAME_PATH, update.file.absolutePath)
+            values.put(UpdateEntry.COLUMN_NAME_PATH, update.file?.absolutePath)
             values.put(UpdateEntry.COLUMN_NAME_DOWNLOAD_ID, update.downloadId)
             values.put(UpdateEntry.COLUMN_NAME_TIMESTAMP, update.timestamp)
             values.put(UpdateEntry.COLUMN_NAME_VERSION, update.version)

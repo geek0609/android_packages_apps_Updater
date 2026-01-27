@@ -27,6 +27,20 @@
     </PreferenceCategory>
 
     <PreferenceCategory
+        android:title="@string/downloads_header"
+        app:iconSpaceReserved="false"
+        app:key="downloads">
+
+        <SwitchPreferenceCompat
+            android:key="stream_ota"
+            android:title="@string/menu_stream_ota"
+            android:summary="@string/menu_stream_ota_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
         android:title="@string/play_integrity_header"
         app:allowDividerAbove="false"
         app:iconSpaceReserved="false"

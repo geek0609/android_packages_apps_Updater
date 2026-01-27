@@ -209,7 +209,17 @@ public class UpdaterService extends Service {
                 throw new IllegalArgumentException(update.getDownloadId() + " is not verified");
             }
             try {
-                if (Utils.isABUpdate(update.getFile())) {
+                boolean streamEnabled = PreferenceManager.getDefaultSharedPreferences(this)
+                        .getBoolean(Constants.PREF_STREAM_OTA, true);
+                boolean useStreamInstall = update.getStream() && streamEnabled;
+
+                if (!useStreamInstall && update.getFile() == null) {
+                    Log.d(TAG, "No local package available, starting regular download first");
+                    mUpdaterController.startDownload(downloadId);
+                    return START_NOT_STICKY;
+                }
+
+                if (useStreamInstall || Utils.isABUpdate(update.getFile())) {
                     ABUpdateInstaller installer =
                             ABUpdateInstaller.getInstance(this, mUpdaterController);
                     installer.install(downloadId);
