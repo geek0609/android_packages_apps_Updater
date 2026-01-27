@@ -78,6 +78,24 @@
     <string name="update_recovery_summary">Enable to update recovery from the build automatically.</string>
 
     <string name="snack_updates_check_failed">The update check failed. Please check your internet connection and try again later.</string>
+
+    <!-- Download Mirrors -->
+    <string name="downloads_header">Downloads</string>
+    <string name="mirror_dialog_title">Available Mirrors</string>
+    <string name="snack_ranking_mirrors">Ranking mirrors. Please wait!</string>
+    <string name="snack_fetching_mirrors">Fetching mirrors. Please wait!</string>
+    <string name="snack_failed_mirrors">Failed to fetch mirrors.</string>
+    <string name="snack_fetched_mirrors">Fetched mirrors. Done!</string>
+    <string name="snack_set_mirror">Mirror set to %1$s!</string>
+    <string name="snack_force_mirror">Previously selected mirror %1$s was not found! Fallback to default.</string>
+    <string name="select_mirror">Select mirror</string>
+    <string name="mirror_loading">Loading mirrors…</string>
+    <string name="mirror_current">Current: %1$s</string>
+    <string name="mirror_default">Default</string>
+    <string name="menu_mirrors">Select mirror location</string>
+    <string name="menu_mirrors_summary">If your download is slow or failing, try switching to a different server.</string>
+
+
     <string name="snack_download_failed">The download failed. Please check your internet connection and try again later.</string>
     <string name="snack_download_verification_failed">The update verification failed.</string>
     <string name="snack_download_verified">Download completed.</string>
