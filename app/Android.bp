@@ -36,6 +36,7 @@ android_app {
         "androidx.swiperefreshlayout_swiperefreshlayout",
         "com.google.android.material_material",
         "Updater_io.noties.markwon_core",
+        "Updater_org.jsoup_jsoup",
         "kotlin-stdlib",
     ],
 
