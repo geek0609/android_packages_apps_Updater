@@ -233,8 +233,11 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
             val displayNames: Array<String> = if (DownloadMirrorController.sSortedRankedMirrors != null) {
                 val rankedMirrors = DownloadMirrorController.sSortedRankedMirrors
                 mirrorNames.mapIndexed { index, name ->
-                    val ping = rankedMirrors.keys.elementAtOrNull(index)
-                    if (ping != null) "$name (${String.format("%.1f", ping)} ms)" else name
+                    val timePerMb = rankedMirrors.keys.elementAtOrNull(index)
+                    if (timePerMb != null && timePerMb > 0) {
+                        val speed = 1000.0 / timePerMb
+                        "$name (${String.format("%.2f", speed)} MB/s)"
+                    } else name
                 }.toTypedArray()
             } else {
                 mirrorNames

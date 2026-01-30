@@ -11,9 +11,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -136,7 +137,7 @@ public class DownloadMirrorController {
                                     .split(",", 2)[0]
                                     .trim();
                             sMirrorLinks.put(mirrorPlace, "https://" + mirrorName + ".dl.sourceforge.net/project/" + finalProjectName + finalFilepath);
-                            rankLinks.put(mirrorPlace, mirrorName + ".dl.sourceforge.net");
+                            rankLinks.put(mirrorPlace, "https://" + mirrorName + ".dl.sourceforge.net/project/" + finalProjectName + finalFilepath);
                             Log.d(TAG, "Mirror: " + mirrorName + " (" + mirrorPlace + ")");
                         } catch (StringIndexOutOfBoundsException e) {
                             Log.w(TAG, "Failed to parse mirror place for: " + mirrorName + ", text: " + mirrorPlace);
@@ -217,36 +218,63 @@ public class DownloadMirrorController {
 
         @Override
         public void run() {
-            try {
-                String[] pingCmd = {"ping", "-c", "5", rankUrl};
-                String pingOutput;
-                double pingResult;
-                Runtime runtime = Runtime.getRuntime();
-                Process process = runtime.exec(pingCmd);
-                BufferedReader in = new BufferedReader(new InputStreamReader(process.getInputStream()));
-                pingOutput = in.readLine();
+            // 512KB chunk size
+            final int CHUNK_SIZE = 524288;
 
-                while (pingOutput != null) {
-                    if (pingOutput.contains("rtt") || pingOutput.contains("round-trip")) {
-                        // Parse mdev value from ping output
-                        int lastSlash = pingOutput.lastIndexOf("/");
-                        int msIndex = pingOutput.lastIndexOf(" ms");
-                        if (lastSlash != -1 && msIndex != -1 && lastSlash < msIndex) {
-                            try {
-                                pingResult = Double.parseDouble(pingOutput.substring(lastSlash + 1, msIndex).trim());
-                                if (pingResult != 0) {
-                                    sRankedMirrors.put(pingResult, rankName);
-                                }
-                                Log.d(TAG, "mdev of mirror " + rankName + ": " + pingResult);
-                            } catch (NumberFormatException ignored) {
-                            }
-                        }
+            HttpURLConnection connection = null;
+            InputStream inputStream = null;
+            try {
+                URL url = new URL(rankUrl);
+                connection = (HttpURLConnection) url.openConnection();
+                connection.setConnectTimeout(10000);
+                connection.setReadTimeout(10000);
+                connection.setRequestProperty("Range", "bytes=0-" + (CHUNK_SIZE - 1));
+                connection.setRequestProperty("Connection", "close");
+                connection.setInstanceFollowRedirects(true);
+
+                connection.connect();
+
+                int responseCode = connection.getResponseCode();
+                if (responseCode == HttpURLConnection.HTTP_PARTIAL || responseCode == HttpURLConnection.HTTP_OK) {
+                    inputStream = connection.getInputStream();
+                    byte[] buffer = new byte[8192];
+                    int bytesRead;
+                    int totalBytesRead = 0;
+
+                    long start = System.nanoTime();
+
+                    while (totalBytesRead < CHUNK_SIZE && (bytesRead = inputStream.read(buffer)) != -1) {
+                        totalBytesRead += bytesRead;
                     }
-                    pingOutput = in.readLine();
+
+                    long durationNs = System.nanoTime() - start;
+
+                    if (totalBytesRead > 10240) {
+                        double durationSec = durationNs / 1_000_000_000.0;
+                        double sizeMb = totalBytesRead / (1024.0 * 1024.0);
+
+                        double speedMbPerSec = sizeMb / durationSec;
+                        double msPerMb = (durationSec * 1000.0) / sizeMb;
+
+                        synchronized (DownloadMirrorController.class) {
+                            sRankedMirrors.put(msPerMb, rankName);
+                        }
+                        Log.d(TAG, "Speed of mirror " + rankName + ": " + String.format("%.2f", speedMbPerSec) + " MB/s");
+                    } else {
+                        Log.w(TAG, "Mirror " + rankName + " returned too little data: " + totalBytesRead + " bytes");
+                    }
                 }
-                in.close();
             } catch (IOException e) {
-                Log.e(TAG, "Failed to rank mirror " + rankName, e);
+                Log.w(TAG, "Failed to test speed for " + rankName + ": " + e.getMessage());
+            } finally {
+                if (inputStream != null) {
+                    try {
+                        inputStream.close();
+                    } catch (IOException ignored) {}
+                }
+                if (connection != null) {
+                    connection.disconnect();
+                }
             }
         }
     }
