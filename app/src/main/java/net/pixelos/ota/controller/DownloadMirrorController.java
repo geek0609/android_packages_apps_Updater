@@ -20,10 +20,15 @@ import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class DownloadMirrorController {
 
     private static final String TAG = "DownloadMirrorController";
+
+    private static final Pattern SF_PROJECTS_PATTERN = Pattern.compile("sourceforge\\.net/projects/([^/]+)/files(/.+?)(?:/download)?$");
+    private static final Pattern SF_MIRROR_PATTERN = Pattern.compile("\\.dl\\.sourceforge\\.net/project/([^/]+)(/.+)");
 
     private static Map<String, String> sMirrorLinks;
     private static Map<Double, String> sRankedMirrors;
@@ -77,27 +82,17 @@ public class DownloadMirrorController {
         String filepath = null;
 
         try {
-            if (downloadUrl.contains("sourceforge.net/projects/")) {
-                int projectStart = downloadUrl.indexOf("/projects/") + 10;
-                int projectEnd = downloadUrl.indexOf("/files/", projectStart);
-                if (projectEnd == -1) projectEnd = downloadUrl.indexOf("/", projectStart);
-                projectName = downloadUrl.substring(projectStart, projectEnd);
+            Matcher projectsMatcher = SF_PROJECTS_PATTERN.matcher(downloadUrl);
+            Matcher mirrorMatcher = SF_MIRROR_PATTERN.matcher(downloadUrl);
 
-                int filesStart = downloadUrl.indexOf("/files/") + 6; // Keep the leading /
-                String remaining = downloadUrl.substring(filesStart);
-                // Remove trailing /download if present
-                if (remaining.endsWith("/download")) {
-                    remaining = remaining.substring(0, remaining.length() - 9);
-                }
-                filepath = remaining;
-            } else if (downloadUrl.contains(".dl.sourceforge.net/project/")) {
-                // Format: https://{mirror}.dl.sourceforge.net/project/{project}/{filepath}
-                int projectStart = downloadUrl.indexOf("/project/") + 9;
-                int projectEnd = downloadUrl.indexOf("/", projectStart);
-                projectName = downloadUrl.substring(projectStart, projectEnd);
-                filepath = downloadUrl.substring(projectStart + projectName.length());
+            if (projectsMatcher.find()) {
+                projectName = projectsMatcher.group(1);
+                filepath = projectsMatcher.group(2);
+            } else if (mirrorMatcher.find()) {
+                projectName = mirrorMatcher.group(1);
+                filepath = mirrorMatcher.group(2);
             }
-        } catch (StringIndexOutOfBoundsException e) {
+        } catch (Exception e) {
             Log.e(TAG, "Failed to parse URL: " + downloadUrl, e);
             return null;
         }
