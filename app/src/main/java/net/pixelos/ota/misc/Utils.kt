@@ -345,7 +345,9 @@ object Utils {
         val dbHelper = UpdatesDbHelper(context)
         val knownPaths: MutableList<String> = ArrayList()
         for (update in dbHelper.updates) {
-            knownPaths.add(update.file.absolutePath)
+            if (update.file != null) {
+                knownPaths.add(update.file.absolutePath)
+            }
         }
         for (file: File in files) {
             if (!knownPaths.contains(file.absolutePath)) {
@@ -392,6 +394,9 @@ object Utils {
     @JvmStatic
     @Throws(IOException::class)
     fun isABUpdate(file: File?): Boolean {
+        if (file == null || !file.exists()) {
+            return false
+        }
         val zipFile = ZipFile(file)
         val isAB: Boolean = isABUpdate(zipFile)
         zipFile.close()

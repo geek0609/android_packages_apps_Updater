@@ -424,7 +424,7 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
                             mUpdateInfoWarning.isVisible = false
                             val update: UpdateInfo =
                                 mUpdaterController!!.getUpdate(mLatestDownloadId)
-                            if (canInstall(update) || update.file.length() == update.fileSize) {
+                            if (canInstall(update) || (update.file != null && update.file.exists() && update.file.length() == update.fileSize)) {
                                 mUpdaterController!!.resumeDownload(mLatestDownloadId)
                             } else {
                                 showUpdateInfo(R.string.snack_update_not_installable)
@@ -742,12 +742,17 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
         if (mUpdaterController!!.isDownloading(downloadId)) {
             showCancelButton = true
             canDelete = true
-            val downloaded: String = Formatter.formatShortFileSize(this, update.file.length())
+            var downloaded: String? = null
+            if (update.file != null) {
+                downloaded = Formatter.formatShortFileSize(this, update.file.length())
+            }
             val total: String = Formatter.formatShortFileSize(this, update.fileSize)
             val percentage: String =
                 NumberFormat.getPercentInstance().format((update.progress / 100f).toDouble())
             mProgressPercent.text = percentage
-            mProgressText.text = getString(R.string.list_download_progress_newer, downloaded, total)
+            if (downloaded != null) {
+                mProgressText.text = getString(R.string.list_download_progress_newer, downloaded, total)
+            }
             mUpdateStatus.setText(R.string.system_update_downloading)
             mUpdateIcon.setImageResource(R.drawable.ic_system_update)
             setupButtonAction(Action.PAUSE, mPrimaryActionButton, true)
@@ -785,14 +790,21 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
             showCancelButton = true
             canDelete = true
             setupButtonAction(Action.RESUME, mPrimaryActionButton, !isBusy)
-            val downloaded: String = Formatter.formatShortFileSize(this, update.file.length())
+            var downloaded: String? = null
+            if (update.file != null && update.file.exists()) {
+                downloaded = Formatter.formatShortFileSize(this, update.file.length())
+            }
             val total: String = Formatter.formatShortFileSize(this, update.fileSize)
             val percentage: String =
                 NumberFormat.getPercentInstance().format((update.progress / 100f).toDouble())
             mUpdateIcon.setImageResource(R.drawable.ic_system_update)
             mWarnMeteredConnectionCard.isVisible = true
             mProgressPercent.text = percentage
-            mProgressText.text = getString(R.string.list_download_progress_newer, downloaded, total)
+            if (downloaded != null) {
+                mProgressText.text = getString(R.string.list_download_progress_newer, downloaded, total)
+            } else {
+                mProgressText.text = getString(R.string.list_download_progress_newer, "0", total)
+            }
             mProgressBar.isIndeterminate = false
             mProgressBar.progress = update.progress
             mUpdateStatus.setText(R.string.system_update_downloading_paused)
@@ -894,13 +906,17 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
         val update: UpdateInfo = mUpdaterController!!.getUpdate(downloadId)
         val resId: Int =
             try {
-                if (isABUpdate(update.file)) {
+                if (update.stream) {
+                    R.string.apply_update_dialog_message_ab
+                } else if (isABUpdate(update.file)) {
                     R.string.apply_update_dialog_message_ab
                 } else {
                     R.string.apply_update_dialog_message
                 }
             } catch (e: IOException) {
                 Log.e(TAG, "Could not determine the type of the update")
+                // Fallback to legacy behavior if check fails
+                R.string.apply_update_dialog_message
             }
 
         val buildDate: String = getDateLocalizedUTC(this, DateFormat.MEDIUM, update.timestamp)

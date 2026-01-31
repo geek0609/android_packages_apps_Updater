@@ -259,7 +259,7 @@ public class UpdaterController {
                     if (entry != null) {
                         Update update = entry.mUpdate;
                         File file = update.getFile();
-                        if (file.exists() && verifyPackage(file)) {
+                        if (file != null && file.exists() && verifyPackage(file)) {
                             //noinspection ResultOfMethodCallIgnored
                             file.setReadable(true, false);
                             update.setPersistentStatus(UpdateStatus.Persistent.VERIFIED);
@@ -279,6 +279,9 @@ public class UpdaterController {
     }
 
     private boolean verifyPackage(File file) {
+        if (file == null) {
+            return false;
+        }
         try {
             android.os.RecoverySystem.verifyPackage(file, null, null);
             Log.e(TAG, "Verification successful");
@@ -297,6 +300,14 @@ public class UpdaterController {
     }
 
     private boolean fixUpdateStatus(Update update) {
+        if (update.getStream()) {
+            if (update.getPersistentStatus() == UpdateStatus.Persistent.UNKNOWN) {
+                update.setStatus(UpdateStatus.VERIFIED);
+                update.setPersistentStatus(UpdateStatus.Persistent.VERIFIED);
+                mUpdatesDbHelper.changeUpdateStatus(update);
+            }
+            return true;
+        }
         switch (update.getPersistentStatus()) {
             case UpdateStatus.Persistent.VERIFIED:
             case UpdateStatus.Persistent.INCOMPLETE:
@@ -503,7 +514,7 @@ public class UpdaterController {
         new Thread(
                 () -> {
                     File file = update.getFile();
-                    if (file.exists() && !file.delete()) {
+                    if (file != null && file.exists() && !file.delete()) {
                         Log.e(TAG, "Could not delete " + file.getAbsolutePath());
                     }
                     mUpdatesDbHelper.removeUpdate(update.getDownloadId());
