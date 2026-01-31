@@ -393,6 +393,17 @@ public class UpdaterController {
             return;
         }
         Update update = entry.mUpdate;
+
+        // If this is a streaming update, skip download and go directly to verification/installation ready state
+        if (update.getStream()) {
+            Log.d(TAG, "Streaming update detected, skipping download");
+            update.setStatus(UpdateStatus.VERIFIED); // Ready to install
+            update.setPersistentStatus(UpdateStatus.Persistent.VERIFIED);
+            mUpdatesDbHelper.changeUpdateStatus(update);
+            notifyUpdateChange(downloadId);
+            return;
+        }
+
         File destination = new File(mDownloadRoot, update.getName());
         if (destination.exists()) {
             destination = Utils.appendSequentialNumber(destination);
