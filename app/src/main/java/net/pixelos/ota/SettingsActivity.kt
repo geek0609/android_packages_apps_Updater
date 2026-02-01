@@ -32,7 +32,6 @@ import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
 import androidx.preference.SwitchPreferenceCompat
 import com.google.android.material.appbar.MaterialToolbar
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 import java.io.FileInputStream
 import java.util.Locale
@@ -40,14 +39,11 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import net.pixelos.ota.MirrorsDbHelper
-import net.pixelos.ota.controller.DownloadMirrorController
 import net.pixelos.ota.controller.UpdaterController
 import net.pixelos.ota.download.APKDownloader
 import net.pixelos.ota.misc.Constants
 import net.pixelos.ota.misc.Utils
 import net.pixelos.ota.misc.Utils.getLocalVersion
-import net.pixelos.ota.model.UpdateInfo
 
 class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
     private val toolbar by lazy { findViewById<MaterialToolbar>(R.id.toolbar) }
@@ -95,12 +91,10 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
         private val updateRecovery by lazy {
             findPreference<SwitchPreferenceCompat>(Constants.PREF_UPDATE_RECOVERY)!!
         }
-        private val downloadMirror by lazy {
-            findPreference<Preference>(Constants.PREF_DOWNLOAD_MIRROR)!!
-        }
         private val streamOta by lazy {
             findPreference<SwitchPreferenceCompat>(Constants.PREF_STREAM_OTA)!!
         }
+
 
         private val sharedPreference by lazy {
             PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -184,24 +178,6 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
                     }
             }
 
-            downloadMirror.let {
-                val updates = updaterController.updates
-                if (updates.isNotEmpty()) {
-                    val update = updates[0]
-                    val mirrorsDbHelper = MirrorsDbHelper.getInstance(requireContext())
-                    val currentMirror = mirrorsDbHelper.getMirrorName(update.downloadId)
-                    it.summary = if (currentMirror.isNullOrEmpty()) getString(R.string.mirror_default) else currentMirror
-
-                    it.onPreferenceClickListener = Preference.OnPreferenceClickListener {
-                        fetchMirrorsAndShow(update)
-                        true
-                    }
-                } else {
-                    it.isEnabled = false
-                    it.summary = getString(R.string.system_up_to_date)
-                }
-            }
-
             streamOta.let {
                 val updates = updaterController.updates
                 val update = if (updates.isNotEmpty()) updates[0] else null
@@ -211,19 +187,8 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
 
                 if (isAB && supportsStream) {
                     it.isVisible = true
-                    val isStreamingEnabled = sharedPreference.getBoolean(Constants.PREF_STREAM_OTA, true)
-                    downloadMirror.isEnabled = !isStreamingEnabled && updates.isNotEmpty()
-
-                    it.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
-                        val enabled = newValue as Boolean
-                        downloadMirror.isEnabled = !enabled
-                        true
-                    }
                 } else {
                     it.isVisible = false
-                    if (updates.isNotEmpty()) {
-                        downloadMirror.isEnabled = true
-                    }
                 }
             }
 
@@ -234,70 +199,6 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
 
             setupPreferenceAction(Action.CHECK_UPDATES)
             updateCertifiedPropsStatus(-1)
-        }
-
-        private fun fetchMirrorsAndShow(update: UpdateInfo) {
-            val progressDialog = MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.mirror_dialog_title)
-                .setMessage(R.string.mirror_loading)
-                .setCancelable(false)
-                .create()
-            progressDialog.show()
-
-            CoroutineScope(Dispatchers.IO).launch {
-                val mirrors = DownloadMirrorController.fetchMirrors(update)
-                withContext(Dispatchers.Main) {
-                    progressDialog.dismiss()
-                    if (mirrors != null && mirrors.isNotEmpty()) {
-                        showMirrorSelectionDialog(mirrors, update)
-                    } else {
-                        showMirrorError()
-                    }
-                }
-            }
-        }
-
-        private fun showMirrorSelectionDialog(mirrors: Map<String, String>, update: UpdateInfo) {
-            val mirrorsDbHelper = MirrorsDbHelper.getInstance(requireContext())
-            val mirrorNames = mirrors.keys.toTypedArray()
-            val downloadId = update.downloadId
-            val currentMirrorName = mirrorsDbHelper.getMirrorName(downloadId)
-
-            val displayNames = mirrorNames
-
-            val allNames = arrayOf(getString(R.string.mirror_default)) + displayNames
-            val allMirrorKeys = arrayOf("") + mirrorNames
-
-            var selectedIndex = 0
-            if (!currentMirrorName.isNullOrEmpty()) {
-                val idx = mirrorNames.indexOf(currentMirrorName)
-                if (idx >= 0) selectedIndex = idx + 1
-            }
-
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.mirror_dialog_title)
-                .setSingleChoiceItems(allNames, selectedIndex) { dialog, which ->
-                    val selectedKey = allMirrorKeys[which]
-                    if (selectedKey.isEmpty()) {
-                        mirrorsDbHelper.setMirrorName("", downloadId)
-                        mirrorsDbHelper.setMirrorUrl("", downloadId)
-                        downloadMirror.summary = getString(R.string.mirror_default)
-                    } else {
-                        DownloadMirrorController.setMirror(update, requireContext(), selectedKey)
-                        downloadMirror.summary = selectedKey
-                    }
-                    dialog.dismiss()
-                }
-                .setNegativeButton(android.R.string.cancel, null)
-                .show()
-        }
-
-        private fun showMirrorError() {
-            MaterialAlertDialogBuilder(requireContext())
-                .setTitle(R.string.mirror_dialog_title)
-                .setMessage(R.string.snack_failed_mirrors)
-                .setPositiveButton(android.R.string.ok, null)
-                .show()
         }
 
         private fun setupPreferenceAction(action: Action) {

@@ -79,7 +79,6 @@ dependencies {
     implementation(libs.androidx.preference)
     implementation(libs.material)
     implementation(libs.core)
-    implementation(libs.jsoup)
     implementation(libs.androidx.swiperefreshlayout)
 }
 
@@ -94,7 +93,6 @@ configure<GenerateBpPluginExtension> {
             module.group == "com.google.errorprone" -> true
             module.group == "com.google.guava" -> true
             module.group == "junit" -> true
-            module.group == "org.jsoup" -> true
             else -> false
         }
     }

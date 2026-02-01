@@ -25,9 +25,9 @@
             android:title="@string/menu_update_recovery"
             app:iconSpaceReserved="false" />
     </PreferenceCategory>
+
     <PreferenceCategory
         android:title="@string/downloads_header"
-        app:allowDividerAbove="false"
         app:iconSpaceReserved="false"
         app:key="downloads">
 
@@ -38,13 +38,8 @@
             android:defaultValue="true"
             app:iconSpaceReserved="false" />
 
-        <Preference
-            android:key="download_mirror"
-            android:title="@string/menu_mirrors"
-            android:summary="@string/menu_mirrors_summary"
-            app:iconSpaceReserved="false" />
-
     </PreferenceCategory>
+
     <PreferenceCategory
         android:title="@string/play_integrity_header"
         app:allowDividerAbove="false"

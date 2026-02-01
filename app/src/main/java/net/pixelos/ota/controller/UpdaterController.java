@@ -21,14 +21,12 @@ import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.os.SystemProperties;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
-import net.pixelos.ota.MirrorsDbHelper;
 import net.pixelos.ota.UpdatesDbHelper;
 import net.pixelos.ota.download.DownloadClient;
 import net.pixelos.ota.misc.Constants;
@@ -54,9 +52,8 @@ public class UpdaterController {
     public static final String ACTION_UPDATE_STATUS = "action_update_status_change";
     public static final String EXTRA_DOWNLOAD_ID = "extra_download_id";
     private static final int MAX_REPORT_INTERVAL_MS = 1000;
-    private static final String TAG = "UpdaterController";
     private static UpdaterController sUpdaterController;
-    private static MirrorsDbHelper sMirrorsDbHelper;
+    private final String TAG = "UpdaterController";
     private final Context mContext;
     private final LocalBroadcastManager mBroadcastManager;
     private final UpdatesDbHelper mUpdatesDbHelper;
@@ -65,13 +62,12 @@ public class UpdaterController {
 
     private final File mDownloadRoot;
     private final Set<String> mVerifyingUpdates = new HashSet<>();
-    private static final Map<String, DownloadEntry> mDownloads = new HashMap<>();
+    private final Map<String, DownloadEntry> mDownloads = new HashMap<>();
     private int mActiveDownloads = 0;
 
     private UpdaterController(Context context) {
         mBroadcastManager = LocalBroadcastManager.getInstance(context);
         mUpdatesDbHelper = new UpdatesDbHelper(context);
-        sMirrorsDbHelper = MirrorsDbHelper.getInstance(context);
         mDownloadRoot = Utils.getDownloadPath(context);
         PowerManager powerManager = context.getSystemService(PowerManager.class);
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "Updater:wakelock");
@@ -341,7 +337,6 @@ public class UpdaterController {
             Log.d(TAG, downloadId + " no longer available online, removing");
             mDownloads.remove(downloadId);
             notifyUpdateDelete(downloadId);
-            sMirrorsDbHelper.delUpdate(downloadId);
         }
     }
 
@@ -357,15 +352,7 @@ public class UpdaterController {
             if (entry != null) {
                 Update updateAdded = entry.mUpdate;
                 updateAdded.setAvailableOnline(availableOnline && updateAdded.getAvailableOnline());
-                // Check if there's a saved mirror URL
-                String mirrorUrl = sMirrorsDbHelper.getMirrorUrl(updateInfo.getDownloadId());
-                if (mirrorUrl != null && !mirrorUrl.isEmpty()) {
-                    updateAdded.setDownloadUrl(mirrorUrl);
-                    Log.d(TAG, "Using previous mirror: " + mirrorUrl);
-                } else {
-                    updateAdded.setDownloadUrl(updateInfo.getDownloadUrl());
-                    Log.d(TAG, "Using default server url: " + updateInfo.getDownloadUrl());
-                }
+                updateAdded.setDownloadUrl(updateInfo.getDownloadUrl());
             }
             return false;
         }
@@ -378,18 +365,6 @@ public class UpdaterController {
         }
         update.setAvailableOnline(availableOnline);
         mDownloads.put(update.getDownloadId(), new DownloadEntry(update));
-        // Add to mirrors database if not exists
-        if (!sMirrorsDbHelper.isUpdateExists(updateInfo.getDownloadId())) {
-            sMirrorsDbHelper.setUpdate(updateInfo.getDownloadId());
-            Log.d(TAG, "Adding new update to mirrors database: " + update.getDownloadId());
-        } else {
-            // Set previous mirror url if update already exists in mirrorsDB
-            String mirrorUrl = sMirrorsDbHelper.getMirrorUrl(updateInfo.getDownloadId());
-            if (mirrorUrl != null && !mirrorUrl.isEmpty()) {
-                update.setDownloadUrl(mirrorUrl);
-                Log.d(TAG, "Setting previous mirror: " + mirrorUrl);
-            }
-        }
         return true;
     }
 
@@ -542,7 +517,6 @@ public class UpdaterController {
                 Log.d(TAG, "Download no longer available online, removing");
                 mDownloads.remove(downloadId);
                 notifyUpdateDelete(downloadId);
-                sMirrorsDbHelper.delUpdate(downloadId);
             } else {
                 notifyUpdateChange(downloadId);
             }
@@ -607,10 +581,6 @@ public class UpdaterController {
             return;
         }
         ABUpdateInstaller.getInstance(mContext, this).setPerformanceMode(enable);
-    }
-
-    public static MirrorsDbHelper getMirrorsDbHelper() {
-        return sMirrorsDbHelper;
     }
 
     private static class DownloadEntry {

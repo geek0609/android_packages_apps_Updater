@@ -59,7 +59,6 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.bottomappbar.BottomAppBar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.card.MaterialCardView
-import com.google.android.material.chip.Chip
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.progressindicator.CircularProgressIndicator
 import com.google.android.material.progressindicator.LinearProgressIndicator
@@ -128,7 +127,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
     private val mUpdateStatus by lazy { requireViewById<TextView>(R.id.updateStatus) }
     private val toolbar by lazy { requireViewById<MaterialToolbar>(R.id.toolbar) }
     private val mNestedScrollView by lazy { requireViewById<NestedScrollView>(R.id.nestedScrollView) }
-    private val mMirrorChip by lazy { requireViewById<Chip>(R.id.mirrorChip) }
 
     private var mBroadcastReceiver: BroadcastReceiver
     private var mLatestDownloadId: String
@@ -197,7 +195,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
         updateLastCheckedString()
 
         setupSwipeRefresh()
-        setupMirrorChip()
         setupInsets()
     }
 
@@ -708,7 +705,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
             mUpdateStatus.setText(R.string.system_up_to_date)
             mCurrentBuildInfo.isVisible = true
             mSwipeRefresh.isEnabled = false
-            mMirrorChip.isVisible = false
             return
         }
 
@@ -718,7 +714,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
         mProgress.isVisible = false
         mCurrentBuildInfo.isVisible = false
         setChangelogs(mChangelogSection)
-        updateMirrorChipState(update)
 
         val activeLayout: Boolean =
             update.persistentStatus == UpdateStatus.Persistent.INCOMPLETE ||
@@ -819,7 +814,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
 
         mProgress.isVisible = true
         mSwipeRefresh.isEnabled = false
-        mMirrorChip.isVisible = false
     }
 
     private fun handleNotActiveStatus(update: UpdateInfo) {
@@ -835,8 +829,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
             showCancelButton = true
             if (canInstall(update)) {
                 setupButtonAction(Action.INSTALL, mPrimaryActionButton, !isBusy)
-                // Allow deleting the downloaded update before installing
-                setupButtonAction(Action.DELETE, mSecondaryActionButton, !isBusy)
             } else {
                 mPrimaryActionButton.isVisible = false
                 setupButtonAction(Action.DELETE, mSecondaryActionButton, !isBusy)
@@ -974,37 +966,6 @@ class UpdatesActivity : AppCompatActivity(), UpdateImporter.Callbacks {
                 else resources.getInteger(R.integer.battery_ok_percentage_discharging)
             return percent >= required
         }
-
-    private fun setupMirrorChip() {
-        mMirrorChip.isClickable = false
-        mMirrorChip.isFocusable = false
-    }
-
-    private fun updateMirrorChipState(update: UpdateInfo?) {
-        if (update == null || mLatestDownloadId.isEmpty()) {
-            mMirrorChip.isVisible = false
-            return
-        }
-
-        // Only show chip when update is available and not yet downloading/installing
-        val showChip = update.persistentStatus != UpdateStatus.Persistent.VERIFIED &&
-                !mUpdaterController!!.isDownloading(update.downloadId) &&
-                !mUpdaterController!!.isInstallingUpdate(update.downloadId) &&
-                !mUpdaterController!!.isWaitingForReboot(update.downloadId)
-
-        mMirrorChip.isVisible = showChip
-
-        if (showChip) {
-            val mirrorsDbHelper = MirrorsDbHelper.getInstance(this)
-            val currentMirror = mirrorsDbHelper.getMirrorName(update.downloadId)
-            if (!currentMirror.isNullOrEmpty()) {
-                mMirrorChip.text = getString(R.string.mirror_current, currentMirror)
-                mMirrorChip.isVisible = true
-            } else {
-                mMirrorChip.isVisible = false
-            }
-        }
-    }
 
     private enum class Action {
         CHECK_UPDATES,

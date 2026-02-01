@@ -26,7 +26,6 @@ object Constants {
     const val PREF_CHECK_FOR_CERTIFIED_PROPS: String = "check_certified_prop"
     const val PREF_NEEDS_REBOOT_ID: String = "needs_reboot_id"
     const val PREF_AUTO_DELETE_UPDATES: String = "auto_delete_updates"
-    const val PREF_DOWNLOAD_MIRROR: String = "download_mirror"
     const val PREF_STREAM_OTA: String = "stream_ota"
 
     const val PREF_DEV_OPTIONS_ENABLED: String = "dev_options_enabled"
