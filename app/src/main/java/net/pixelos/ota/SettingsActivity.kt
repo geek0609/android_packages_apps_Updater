@@ -179,17 +179,7 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
             }
 
             streamOta.let {
-                val updates = updaterController.updates
-                val update = if (updates.isNotEmpty()) updates[0] else null
-
-                val isAB = Utils.isABDevice
-                val supportsStream = update?.stream == true
-
-                if (isAB && supportsStream) {
-                    it.isVisible = true
-                } else {
-                    it.isVisible = false
-                }
+                it.isVisible = Utils.isABDevice
             }
 
             val downloadsCategory = findPreference<PreferenceCategory>("downloads")!!
