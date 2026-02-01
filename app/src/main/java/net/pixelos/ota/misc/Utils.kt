@@ -157,20 +157,6 @@ object Utils {
 
     @JvmStatic
     fun getServerURL(context: Context): String {
-        val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-        // Check if developer options are enabled
-        if (prefs.getBoolean(Constants.PREF_DEV_OPTIONS_ENABLED, false)) {
-            val customUrl = prefs.getString(Constants.PREF_DEV_SERVER_URL, null)
-            if (!customUrl.isNullOrEmpty()) {
-                val device = prefs.getString(Constants.PREF_DEV_DEVICE_NAME, null)
-                    ?: SystemProperties.get(Constants.PROP_DEVICE)
-                val version = prefs.getString(Constants.PREF_DEV_VERSION, null)
-                    ?: SystemProperties.get(Constants.PROP_BUILD_VERSION)
-                return customUrl.replace("{version}", version).replace("{device}", device)
-            }
-        }
-
         val buildVersion: String = SystemProperties.get(Constants.PROP_BUILD_VERSION)
         val device: String = SystemProperties.get(Constants.PROP_DEVICE)
         val serverUrl: String = context.getString(R.string.updater_server_url)
@@ -180,18 +166,6 @@ object Utils {
 
     @JvmStatic
     fun getChangelogURL(context: Context): String {
-        val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
-
-        // Check if developer options are enabled
-        if (prefs.getBoolean(Constants.PREF_DEV_OPTIONS_ENABLED, false)) {
-            val device = prefs.getString(Constants.PREF_DEV_DEVICE_NAME, null)
-                ?: SystemProperties.get(Constants.PROP_DEVICE)
-            val version = prefs.getString(Constants.PREF_DEV_VERSION, null)
-                ?: SystemProperties.get(Constants.PROP_BUILD_VERSION)
-            val changelogUrl: String = context.getString(R.string.changelog_url)
-            return changelogUrl.replace("{version}", version).replace("{device}", device)
-        }
-
         val buildVersion: String = SystemProperties.get(Constants.PROP_BUILD_VERSION)
         val device: String = SystemProperties.get(Constants.PROP_DEVICE)
         val changelogUrl: String = context.getString(R.string.changelog_url)

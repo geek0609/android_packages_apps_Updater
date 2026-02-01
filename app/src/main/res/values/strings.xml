@@ -155,16 +155,6 @@
 
     <string name="general_header">General</string>
     <string name="play_integrity_header">Play Integrity</string>
-    <string name="dev_options_header">Developer options</string>
-
-    <string name="dev_options_enabled">Enable developer options</string>
-    <string name="dev_options_enabled_summary">Override update server settings for testing</string>
-    <string name="dev_server_url">Server URL</string>
-    <string name="dev_server_url_summary">Custom URL for fetching update JSON</string>
-    <string name="dev_device_name">Device name</string>
-    <string name="dev_device_name_summary">Override device codename</string>
-    <string name="dev_version">Version</string>
-    <string name="dev_version_summary">Override version/branch name</string>
 
     <string name="text_download_size_unknown">Unknown</string>
 
