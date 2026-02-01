@@ -26,6 +26,7 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
 
 import net.pixelos.ota.MirrorsDbHelper;
 import net.pixelos.ota.UpdatesDbHelper;
@@ -405,10 +406,11 @@ public class UpdaterController {
         }
         Update update = entry.mUpdate;
 
-        // If this is a streaming update, skip download and go directly to verification/installation ready state
-        if (update.getStream()) {
+        boolean streamEnabled = PreferenceManager.getDefaultSharedPreferences(mContext)
+                .getBoolean(Constants.PREF_STREAM_OTA, true);
+        if (update.getStream() && streamEnabled) {
             Log.d(TAG, "Streaming update detected, skipping download");
-            update.setStatus(UpdateStatus.VERIFIED); // Ready to install
+            update.setStatus(UpdateStatus.VERIFIED);
             update.setPersistentStatus(UpdateStatus.Persistent.VERIFIED);
             mUpdatesDbHelper.changeUpdateStatus(update);
             notifyUpdateChange(downloadId);

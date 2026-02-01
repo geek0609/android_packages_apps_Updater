@@ -98,6 +98,9 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
         private val downloadMirror by lazy {
             findPreference<Preference>(Constants.PREF_DOWNLOAD_MIRROR)!!
         }
+        private val streamOta by lazy {
+            findPreference<SwitchPreferenceCompat>(Constants.PREF_STREAM_OTA)!!
+        }
 
         private val sharedPreference by lazy {
             PreferenceManager.getDefaultSharedPreferences(requireContext())
@@ -197,6 +200,36 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
                     it.isEnabled = false
                     it.summary = getString(R.string.system_up_to_date)
                 }
+            }
+
+            streamOta.let {
+                val updates = updaterController.updates
+                val update = if (updates.isNotEmpty()) updates[0] else null
+
+                val isAB = Utils.isABDevice
+                val supportsStream = update?.stream == true
+
+                if (isAB && supportsStream) {
+                    it.isVisible = true
+                    val isStreamingEnabled = sharedPreference.getBoolean(Constants.PREF_STREAM_OTA, true)
+                    downloadMirror.isEnabled = !isStreamingEnabled && updates.isNotEmpty()
+
+                    it.onPreferenceChangeListener = Preference.OnPreferenceChangeListener { _, newValue ->
+                        val enabled = newValue as Boolean
+                        downloadMirror.isEnabled = !enabled
+                        true
+                    }
+                } else {
+                    it.isVisible = false
+                    if (updates.isNotEmpty()) {
+                        downloadMirror.isEnabled = true
+                    }
+                }
+            }
+
+            val downloadsCategory = findPreference<PreferenceCategory>("downloads")!!
+            if (!streamOta.isVisible) {
+                downloadsCategory.removePreference(streamOta)
             }
 
             setupPreferenceAction(Action.CHECK_UPDATES)

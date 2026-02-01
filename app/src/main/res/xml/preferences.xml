@@ -31,6 +31,13 @@
         app:iconSpaceReserved="false"
         app:key="downloads">
 
+        <SwitchPreferenceCompat
+            android:key="stream_ota"
+            android:title="@string/menu_stream_ota"
+            android:summary="@string/menu_stream_ota_summary"
+            android:defaultValue="true"
+            app:iconSpaceReserved="false" />
+
         <Preference
             android:key="download_mirror"
             android:title="@string/menu_mirrors"

@@ -95,6 +95,9 @@
     <string name="menu_mirrors">Select mirror location</string>
     <string name="menu_mirrors_summary">If your download is slow or failing, try switching to a different server.</string>
 
+    <string name="menu_stream_ota">Stream updates</string>
+    <string name="menu_stream_ota_summary">Save time by installing updates as they download.\nDisable on unreliable network.</string>
+
 
     <string name="snack_download_failed">The download failed. Please check your internet connection and try again later.</string>
     <string name="snack_download_verification_failed">The update verification failed.</string>

@@ -27,8 +27,8 @@ object Constants {
     const val PREF_NEEDS_REBOOT_ID: String = "needs_reboot_id"
     const val PREF_AUTO_DELETE_UPDATES: String = "auto_delete_updates"
     const val PREF_DOWNLOAD_MIRROR: String = "download_mirror"
+    const val PREF_STREAM_OTA: String = "stream_ota"
 
-    // Developer options
     const val PREF_DEV_OPTIONS_ENABLED: String = "dev_options_enabled"
     const val PREF_DEV_SERVER_URL: String = "dev_server_url"
     const val PREF_DEV_DEVICE_NAME: String = "dev_device_name"
