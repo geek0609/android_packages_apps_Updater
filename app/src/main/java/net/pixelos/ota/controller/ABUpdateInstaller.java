@@ -16,6 +16,11 @@
 package net.pixelos.ota.controller;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
+
+import net.pixelos.ota.R;
 import android.content.SharedPreferences;
 import android.os.ServiceSpecificException;
 import android.os.UpdateEngine;
@@ -113,9 +118,17 @@ class ABUpdateInstaller {
                     if (errorCode != UpdateEngine.ErrorCodeConstants.SUCCESS) {
                         installationDone(false);
                         Update update = mUpdaterController.getActualUpdate(mDownloadId);
-                        update.setInstallProgress(0);
-                        update.setStatus(UpdateStatus.INSTALLATION_FAILED);
-                        mUpdaterController.notifyUpdateChange(mDownloadId);
+                        if (update.getStream()) {
+                            new Handler(Looper.getMainLooper()).post(() ->
+                                    Toast.makeText(mContext, R.string.stream_download_failed_toast,
+                                            Toast.LENGTH_LONG).show());
+                            update.setStream(false);
+                            mUpdaterController.startDownload(mDownloadId);
+                        } else {
+                            update.setInstallProgress(0);
+                            update.setStatus(UpdateStatus.INSTALLATION_FAILED);
+                            mUpdaterController.notifyUpdateChange(mDownloadId);
+                        }
                     }
                 }
             };
