@@ -178,9 +178,9 @@ class SettingsActivity : AppCompatActivity(R.layout.activity_settings) {
 
             streamOta.isVisible = Utils.isABDevice
 
-            val downloadsCategory = findPreference<PreferenceCategory>("downloads")!!
-            if (!streamOta.isVisible) {
-                downloadsCategory.removePreference(streamOta)
+            val downloadsCategory = findPreference<PreferenceCategory>("downloads")
+            if (!streamOta.isVisible && downloadsCategory != null) {
+                preferenceScreen.removePreference(downloadsCategory)
             }
 
             setupPreferenceAction(Action.CHECK_UPDATES)
