@@ -58,4 +58,42 @@
 
     </PreferenceCategory>
 
+    <PreferenceCategory
+        android:title="@string/dev_options_header"
+        app:allowDividerAbove="false"
+        app:iconSpaceReserved="false"
+        app:key="dev_options">
+
+        <SwitchPreferenceCompat
+            android:key="dev_options_enabled"
+            android:defaultValue="false"
+            android:summary="@string/dev_options_enabled_summary"
+            android:title="@string/dev_options_enabled"
+            app:iconSpaceReserved="false" />
+
+        <EditTextPreference
+            android:key="dev_server_url"
+            android:dependency="dev_options_enabled"
+            android:summary="@string/dev_server_url_summary"
+            android:title="@string/dev_server_url"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:key="dev_device_name"
+            android:dependency="dev_options_enabled"
+            android:summary="@string/dev_device_name_summary"
+            android:title="@string/dev_device_name"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            android:key="dev_version"
+            android:dependency="dev_options_enabled"
+            android:summary="@string/dev_version_summary"
+            android:title="@string/dev_version"
+            app:iconSpaceReserved="false"
+            app:useSimpleSummaryProvider="true" />
+    </PreferenceCategory>
+
 </PreferenceScreen>
